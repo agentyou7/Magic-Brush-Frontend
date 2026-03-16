@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Phone, Instagram, Facebook, Linkedin, Twitter } from 'lucide-react';
+import { Phone, Instagram, Facebook, Linkedin, Twitter, Youtube } from 'lucide-react';
 import { BUSINESS_DATA } from '@/constants';
 
 const TopBar = () => {
@@ -23,6 +23,7 @@ const TopBar = () => {
                         <a href={BUSINESS_DATA.socials.facebook} target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-orange-500 transition-colors"><Facebook className="w-3.5 h-3.5" /></a>
                         <a href={BUSINESS_DATA.socials.linkedin} target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-orange-500 transition-colors"><Linkedin className="w-3.5 h-3.5" /></a>
                         <a href={BUSINESS_DATA.socials.x} target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-orange-500 transition-colors"><Twitter className="w-3.5 h-3.5" /></a>
+                        <a href={BUSINESS_DATA.socials.youtube} target="_blank" rel="noopener noreferrer" className="text-slate-500 hover:text-orange-500 transition-colors"><Youtube className="w-3.5 h-3.5" /></a>
                     </div>
                     <span className="text-slate-400 uppercase tracking-widest">Master Craftsmanship Since 2014</span>
                 </div>

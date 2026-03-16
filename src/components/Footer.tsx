@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Phone, Mail, MapPin, Instagram, Facebook, ChevronRight, Award, Clock } from 'lucide-react';
+import { Phone, Mail, MapPin, Instagram, Facebook, Linkedin, Twitter, Youtube, ChevronRight, Award, Clock } from 'lucide-react';
 import { BUSINESS_DATA, SERVICES } from '@/constants';
 
 const Footer = () => {
@@ -53,7 +53,7 @@ const Footer = () => {
                                         MAGIC <span className="text-orange-500 ml-1">BRUSH</span> LTD
                                     </h3>
                                     <p className="text-[9px] font-bold tracking-[0.4em] text-slate-500 uppercase mt-1">
-                                        make our dream come true
+                                        make your dream come true
                                     </p>
                                 </div>
                             </Link>
@@ -105,15 +105,31 @@ const Footer = () => {
                                 <Facebook className="w-5 h-5" />
                             </a>
                             <a
+                                href={BUSINESS_DATA.socials.linkedin}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-11 h-11 rounded-xl bg-white/5 hover:bg-blue-700 flex items-center justify-center transition-all hover:scale-110 active:scale-95 text-white"
+                                aria-label="LinkedIn"
+                            >
+                                <Linkedin className="w-5 h-5" />
+                            </a>
+                            <a
                                 href={BUSINESS_DATA.socials.x}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="w-11 h-11 rounded-xl bg-white/5 hover:bg-slate-700 flex items-center justify-center transition-all hover:scale-110 active:scale-95 text-white"
                                 aria-label="X (Twitter)"
                             >
-                                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                                </svg>
+                                <Twitter className="w-5 h-5" />
+                            </a>
+                            <a
+                                href={BUSINESS_DATA.socials.youtube}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-11 h-11 rounded-xl bg-white/5 hover:bg-red-600 flex items-center justify-center transition-all hover:scale-110 active:scale-95 text-white"
+                                aria-label="YouTube"
+                            >
+                                <Youtube className="w-5 h-5" />
                             </a>
                         </div>
                     </div>

@@ -20,5 +20,6 @@ export interface BusinessData {
     facebook: string;
     x: string;
     linkedin: string;
+    youtube: string;
   };
 }

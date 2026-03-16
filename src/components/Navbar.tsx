@@ -94,7 +94,7 @@ const Navbar = () => {
               <span
                 className={`font-black uppercase tracking-[0.3em] text-slate-400 mt-0.5 transition-all ${scrolled ? "text-[7px]" : "text-[8px] sm:text-[9px]"}`}
               >
-                make our dream come true
+                make your dream come true
               </span>
             </div>
           </Link>
