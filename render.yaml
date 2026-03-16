@@ -1,0 +1,15 @@
+services:
+  # Next.js Web Service
+  - type: web
+    name: magic-brush
+    env: node
+    buildCommand: "npm run build"
+    startCommand: "npm start"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: RESEND_API_KEY
+        sync: false
+      - key: NEXT_PUBLIC_BACKEND_URL
+        value: ""
+    plan: free
