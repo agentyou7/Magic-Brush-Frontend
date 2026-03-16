@@ -2,7 +2,7 @@
 
 import React, { Suspense } from 'react';
 import { motion } from 'framer-motion';
-import { Phone, Mail, MapPin, Instagram, Facebook, Twitter, Send, CheckCircle } from 'lucide-react';
+import { Phone, Mail, MapPin, Instagram, Facebook, Twitter, Linkedin, Youtube, Send, CheckCircle } from 'lucide-react';
 import { BUSINESS_DATA, SERVICES } from '@/constants';
 import { useSearchParams } from 'next/navigation';
 
@@ -194,9 +194,11 @@ const ContactFormByParams = () => {
               <div className="mt-12 pt-12 border-t border-white/20">
                 <p className="text-orange-200 mb-6 font-semibold">Social Media Presence</p>
                 <div className="flex space-x-4">
-                  <a href={BUSINESS_DATA.socials.instagram} target="_blank" className="p-3 bg-white/10 rounded-xl hover:bg-white/30 transition-all"><Instagram /></a>
-                  <a href={BUSINESS_DATA.socials.facebook} target="_blank" className="p-3 bg-white/10 rounded-xl hover:bg-white/30 transition-all"><Facebook /></a>
-                  <a href={BUSINESS_DATA.socials.x} target="_blank" className="p-3 bg-white/10 rounded-xl hover:bg-white/30 transition-all"><Twitter /></a>
+                  <a href={BUSINESS_DATA.socials.instagram} target="_blank" rel="noopener noreferrer" className="p-3 bg-white/10 rounded-xl hover:bg-white/30 transition-all"><Instagram /></a>
+                  <a href={BUSINESS_DATA.socials.facebook} target="_blank" rel="noopener noreferrer" className="p-3 bg-white/10 rounded-xl hover:bg-white/30 transition-all"><Facebook /></a>
+                  <a href={BUSINESS_DATA.socials.linkedin} target="_blank" rel="noopener noreferrer" className="p-3 bg-white/10 rounded-xl hover:bg-white/30 transition-all"><Linkedin /></a>
+                  <a href={BUSINESS_DATA.socials.x} target="_blank" rel="noopener noreferrer" className="p-3 bg-white/10 rounded-xl hover:bg-white/30 transition-all"><Twitter /></a>
+                  <a href={BUSINESS_DATA.socials.youtube} target="_blank" rel="noopener noreferrer" className="p-3 bg-white/10 rounded-xl hover:bg-white/30 transition-all"><Youtube /></a>
                 </div>
               </div>
             </div>
