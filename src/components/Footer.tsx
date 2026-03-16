@@ -53,13 +53,13 @@ const Footer = () => {
                                         MAGIC <span className="text-orange-500 ml-1">BRUSH</span> LTD
                                     </h3>
                                     <p className="text-[9px] font-bold tracking-[0.4em] text-slate-500 uppercase mt-1">
-                                        Renovation Excellence
+                                        make our dream come true
                                     </p>
                                 </div>
                             </Link>
                         </div>
                         <p className="text-slate-400 leading-relaxed text-sm max-w-xs">
-                            Transforming properties into premium living spaces since 2009. We blend traditional craftsmanship with modern innovation.
+                            Transforming properties into premium living spaces since 2014. We blend traditional craftsmanship with modern innovation.
                         </p>
 
                         {/* Trust Badges */}
@@ -280,7 +280,7 @@ const Footer = () => {
                         </p>
                         <span className="hidden sm:block text-slate-700">|</span>
                         <span className="text-slate-400">
-                            Designed and Developed with ❤️
+                            Website Owned By Sanjeev Kumar
                         </span>
                     </div>
                     <div className="flex flex-wrap justify-center gap-4 sm:gap-6 text-slate-500">

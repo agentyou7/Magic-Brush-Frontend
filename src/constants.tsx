@@ -23,7 +23,8 @@ export const BUSINESS_DATA: BusinessData = {
     instagram: "https://www.instagram.com/magicbrushltd_/",
     tiktok: "https://www.tiktok.com/@magicbrushltd",
     facebook: "https://www.facebook.com/profile.php?id=61577881073869",
-    x: "https://x.com/SanjeevKum6467"
+    x: "https://x.com/SanjeevKum6467",
+    linkedin: "https://www.linkedin.com/company/magic-brush-ltd"
   }
 };
 

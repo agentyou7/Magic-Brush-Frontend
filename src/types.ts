@@ -19,5 +19,6 @@ export interface BusinessData {
     tiktok: string;
     facebook: string;
     x: string;
+    linkedin: string;
   };
 }
