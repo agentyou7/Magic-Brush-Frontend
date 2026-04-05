@@ -6,9 +6,9 @@ import { Phone, Mail, MapPin, Instagram, Facebook, Twitter, Linkedin, Youtube, S
 import { BUSINESS_DATA, SERVICES } from '@/constants';
 import { useSearchParams } from 'next/navigation';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || '';
 const PHONE_REGEX = /^[+]?[\d\s\-()]{8,20}$/;
-type FormFields = 'name' | 'phone' | 'service' | 'message';
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+type FormFields = 'name' | 'phone' | 'email' | 'service' | 'message';
 type FormDataState = Record<FormFields, string>;
 type FormErrors = Partial<Record<FormFields, string>>;
 
@@ -19,6 +19,7 @@ const ContactFormByParams = () => {
   const [formData, setFormData] = React.useState<FormDataState>({
     name: '',
     phone: '',
+    email: '',
     service: selectedServiceFromState,
     message: ''
   });
@@ -36,6 +37,7 @@ const ContactFormByParams = () => {
     const errors: FormErrors = {};
     const name = data.name.trim();
     const phone = data.phone.trim();
+    const email = data.email.trim().toLowerCase();
     const service = data.service.trim();
     const message = data.message.trim();
 
@@ -47,6 +49,10 @@ const ContactFormByParams = () => {
 
     if (!PHONE_REGEX.test(phone)) {
       errors.phone = 'Enter a valid phone number';
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      errors.email = 'Enter a valid email address';
     }
 
     if (service.length < 2) {
@@ -82,11 +88,12 @@ const ContactFormByParams = () => {
       const payload = {
         name: formData.name.trim(),
         phone: formData.phone.trim(),
+        email: formData.email.trim().toLowerCase(),
         service: formData.service.trim(),
         message: formData.message.trim(),
       };
 
-      const response = await fetch(`${API_BASE_URL}/api/contact`, {
+      const response = await fetch('/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -101,6 +108,7 @@ const ContactFormByParams = () => {
           const backendFieldErrors: FormErrors = {
             name: data.errors.name?.[0],
             phone: data.errors.phone?.[0],
+            email: data.errors.email?.[0],
             service: data.errors.service?.[0],
             message: data.errors.message?.[0],
           };
@@ -110,7 +118,7 @@ const ContactFormByParams = () => {
       }
 
       setStatus('success');
-      setFormData({ name: '', phone: '', service: '', message: '' });
+      setFormData({ name: '', phone: '', email: '', service: '', message: '' });
       setTimeout(() => setStatus('idle'), 5000);
     } catch (error) {
       setStatus('error');
@@ -283,11 +291,23 @@ const ContactFormByParams = () => {
                         onChange={(e) => handleFieldChange('phone', e.target.value)}
                         minLength={8}
                         maxLength={20}
-                        pattern="^[+]?[\\d\\s\\-()]{8,20}$"
+                        pattern="[+]?[0-9 ()-]{8,20}"
                         className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 outline-none focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/10 transition-all font-medium"
                         placeholder="07XXX XXXXXX"
                       />
                       {fieldErrors.phone ? <p className="text-red-600 text-xs ml-1">{fieldErrors.phone}</p> : null}
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                      <label className="text-xs font-bold text-slate-900 uppercase tracking-wide ml-1">Email Address</label>
+                      <input
+                        required
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => handleFieldChange('email', e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 outline-none focus:border-orange-500 focus:bg-white focus:ring-4 focus:ring-orange-500/10 transition-all font-medium"
+                        placeholder="you@example.com"
+                      />
+                      {fieldErrors.email ? <p className="text-red-600 text-xs ml-1">{fieldErrors.email}</p> : null}
                     </div>
                   </div>
 

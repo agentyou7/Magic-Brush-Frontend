@@ -1,34 +1,188 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { SERVICES, BUSINESS_DATA, getServiceIcon } from '@/constants';
+import { BUSINESS_DATA, getServiceHref, getServiceSlug, getServiceIcon } from '@/constants';
+import { cacheServiceForDetail, fetchActiveServices, readCachedActiveServices, readCachedServiceForDetail } from '@/lib/services';
+import ServiceLoader from './ServiceLoader';
+import * as LucideIcons from 'lucide-react';
 // Fix: Added ChevronRight to the lucide-react imports
 import { ArrowLeft, Phone, Mail, ShieldCheck, Clock, Award, ChevronRight } from 'lucide-react';
+
+interface Service {
+  id: string;
+  title: string;
+  shortHeading?: string;
+  description: string;
+  fullDetails?: string;
+  iconName: string;
+  imageUrl?: string;
+  imagePublicId?: string;
+  features: Array<{
+    id: string;
+    iconName: string;
+    heading: string;
+    description: string;
+  }>;
+  isActive: boolean;
+  createdAt: any;
+}
+
+const renderFeatureIcon = (iconName?: string) => {
+  const fallbackIcon = <Award className="w-5 h-5" />;
+
+  if (!iconName) {
+    return fallbackIcon;
+  }
+
+  const normalizedIconName = iconName.trim();
+  const normalizedKey = normalizedIconName.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const iconAliases: Record<string, string> = {
+    home: 'Home',
+    paintbrush: 'Paintbrush',
+    grid: 'Grid',
+    layers: 'Layers',
+    maximize: 'Maximize',
+    star: 'Star',
+    shieldcheck: 'ShieldCheck',
+    clock: 'Clock',
+    award: 'Award',
+    trendingup: 'TrendingUp',
+    chevronright: 'ChevronRight',
+    arrowleft: 'ArrowLeft',
+    search: 'Search',
+    filter: 'Filter',
+    x: 'X',
+    phone: 'Phone',
+    mail: 'Mail',
+    calendar: 'Calendar',
+    user: 'User',
+    settings: 'Settings',
+    heart: 'Heart',
+    shoppingcart: 'ShoppingCart',
+    truck: 'Truck',
+    package: 'Package',
+    wrench: 'Wrench',
+    tools: 'Wrench',
+    fatools: 'Wrench',
+    hammer: 'Hammer',
+    drill: 'Drill',
+    saw: 'Hammer',
+    paintbucket: 'PaintBucket',
+    bucket: 'PaintBucket',
+    brush: 'Brush',
+    ruler: 'Ruler',
+    clipboard: 'Clipboard',
+    filetext: 'FileText',
+    image: 'Image',
+    camera: 'Camera',
+    video: 'Video',
+    music: 'Music',
+    volume2: 'Volume2',
+    wifi: 'Wifi',
+    battery: 'Battery',
+    map: 'Map',
+    navigation: 'Navigation',
+    compass: 'Compass',
+    globe: 'Globe',
+    cloud: 'Cloud',
+    sun: 'Sun',
+    moon: 'Moon',
+    zap: 'Zap',
+    fire: 'Flame',
+    droplet: 'Droplet',
+    wind: 'Wind',
+    snowflake: 'Snowflake',
+    thermometer: 'Thermometer',
+    eye: 'Eye',
+    eyeoff: 'EyeOff',
+  };
+
+  const resolvedIconName = iconAliases[normalizedKey] || normalizedIconName;
+  const LucideIcon =
+    resolvedIconName in LucideIcons
+      ? LucideIcons[resolvedIconName as keyof typeof LucideIcons]
+      : null;
+
+  if (!LucideIcon) {
+    return fallbackIcon;
+  }
+
+  return React.createElement(LucideIcon as React.ElementType, {
+    className: 'w-5 h-5',
+  });
+};
 
 const ServiceDetail = () => {
   /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
   const { id } = useParams() as any;
-  const service = SERVICES.find(s => s.id === id);
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    if (!service) {
+    const cachedService = readCachedServiceForDetail(id);
+    if (cachedService) {
+      setServices([cachedService as Service]);
+      setLoading(false);
+    }
+
+    const cachedServices = readCachedActiveServices();
+    if (cachedServices && cachedServices.length > 0) {
+      setServices(cachedServices as Service[]);
+      setLoading(false);
+    }
+
+    const fetchServices = async () => {
+      try {
+        const activeServices = await fetchActiveServices();
+        setServices(activeServices as Service[]);
+      } catch (error) {
+        console.error('Failed to fetch services:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  const service = services.find(s => getServiceSlug(s) === id || s.id === id);
+  const canonicalServiceHref = service ? getServiceHref(service) : null;
+
+  useEffect(() => {
+    if (!loading && service && canonicalServiceHref && canonicalServiceHref !== `/services/${id}`) {
+      router.replace(canonicalServiceHref);
+      return;
+    }
+
+    if (!loading && !service) {
       router.replace('/services');
     }
-  }, [service, router]);
+  }, [canonicalServiceHref, id, loading, router, service]);
+
+  if (loading) {
+    return <ServiceLoader message="Loading service details..." className="bg-white" />;
+  }
 
   if (!service) {
     return null;
   }
 
-  const benefits = [
-    { title: "Bespoke Design", desc: "Custom solutions tailored to your specific architectural needs.", icon: <Award className="w-5 h-5" /> },
-    { title: "Rapid Execution", desc: "We respect your time and stick to strict project schedules.", icon: <Clock className="w-5 h-5" /> },
-    { title: "Premium Protection", desc: "Work covered by full public liability insurance.", icon: <ShieldCheck className="w-5 h-5" /> },
-  ];
+  // Use dynamic features from service, or fallback to default benefits
+  const benefits = service.features && service.features.length > 0 
+    ? service.features.map(feature => ({
+        title: feature.heading,
+        desc: feature.description,
+        icon: renderFeatureIcon(feature.iconName)
+      }))
+    : [
+        { title: "Bespoke Design", desc: "Custom solutions tailored to your specific architectural needs.", icon: <Award className="w-5 h-5" /> },
+        { title: "Rapid Execution", desc: "We respect your time and stick to strict project schedules.", icon: <Clock className="w-5 h-5" /> },
+        { title: "Premium Protection", desc: "Work covered by full public liability insurance.", icon: <ShieldCheck className="w-5 h-5" /> },
+      ];
 
   return (
     <div className="bg-white min-h-screen">
@@ -74,7 +228,10 @@ const ServiceDetail = () => {
                 viewport={{ once: true }}
               >
                 <div className="inline-flex p-5 rounded-2xl bg-orange-500 text-white shadow-xl mb-10">
-                  {getServiceIcon(service.iconName)}
+                  {React.createElement(
+                    LucideIcons[service.iconName as keyof typeof LucideIcons] as React.ComponentType<any>,
+                    { className: "w-8 h-8" }
+                  )}
                 </div>
                 <h2 className="text-4xl font-black text-slate-900 mb-8 tracking-tight">Project Excellence In Detail</h2>
                 <div className="prose prose-lg text-slate-600 max-w-none space-y-6">
@@ -115,25 +272,25 @@ const ServiceDetail = () => {
                   </p>
 
                   <div className="space-y-6">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-white">
+                    <div className="flex items-start space-x-4">
+                      <div className="w-12 h-12 min-w-12 min-h-12 rounded-2xl bg-white/20 flex items-center justify-center text-white flex-shrink-0">
                         <Phone className="w-5 h-5" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-[10px] font-black uppercase tracking-widest text-orange-200 mb-1">Call Today</p>
-                        <a href={`tel:${BUSINESS_DATA.phone}`} className="font-bold text-lg hover:text-orange-200 transition-colors">
+                        <a href={`tel:${BUSINESS_DATA.phone}`} className="font-bold text-lg hover:text-orange-200 transition-colors leading-tight">
                           {BUSINESS_DATA.phone}
                         </a>
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-white">
+                    <div className="flex items-start space-x-4">
+                      <div className="w-12 h-12 min-w-12 min-h-12 rounded-2xl bg-white/20 flex items-center justify-center text-white flex-shrink-0">
                         <Mail className="w-5 h-5" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <p className="text-[10px] font-black uppercase tracking-widest text-orange-200 mb-1">Email Us</p>
-                        <a href={`mailto:${BUSINESS_DATA.email}`} className="font-bold text-lg hover:text-orange-200 transition-colors">
+                        <a href={`mailto:${BUSINESS_DATA.email}`} className="font-bold text-lg hover:text-orange-200 transition-colors leading-tight break-all">
                           {BUSINESS_DATA.email}
                         </a>
                       </div>
@@ -151,7 +308,7 @@ const ServiceDetail = () => {
                   </Link>
 
                   <div className="mt-10 pt-10 border-t border-white/20 flex items-center space-x-4">
-                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=1887&auto=format&fit=crop" alt="Director" className="w-12 h-12 rounded-full object-cover grayscale" />
+                    <img src="/images/sanjeev.jpeg" alt="Director" className="w-12 h-12 rounded-full object-cover grayscale" />
                     <div>
                       <p className="text-sm font-bold text-white">Sanjeev Kumar</p>
                       <p className="text-[10px] text-orange-200 font-black uppercase tracking-widest leading-none">Director Oversight</p>
@@ -169,10 +326,17 @@ const ServiceDetail = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-black text-slate-900 mb-12 tracking-tight">Explore More Expertise</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {SERVICES.filter(s => s.id !== service.id).slice(0, 4).map((s) => (
+            {services
+              .filter(s => s.id !== service.id)
+              .sort(() => 0.5 - Math.random()) // Random shuffle
+              .slice(0, 4) // Take first 4 random services
+              .map((s) => (
               <Link
                 key={s.id}
-                href={`/services/${s.id}`}
+                href={getServiceHref(s)}
+                onMouseEnter={() => cacheServiceForDetail(s)}
+                onFocus={() => cacheServiceForDetail(s)}
+                onClick={() => cacheServiceForDetail(s)}
                 className="group bg-white p-8 rounded-3xl border border-slate-100 hover:border-orange-500 transition-all flex flex-col justify-between"
               >
                 <div>

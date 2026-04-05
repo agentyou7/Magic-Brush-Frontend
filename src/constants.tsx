@@ -105,3 +105,17 @@ export const getServiceIcon = (name: string) => {
     default: return <Home className="w-8 h-8" />;
   }
 };
+
+export const getServiceSlug = (service: { id: string; title: string }) => {
+  const titleSlug = service.title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+
+  return titleSlug || service.id;
+};
+
+export const getServiceHref = (service: { id: string; title: string }) => {
+  return `/services/${getServiceSlug(service)}`;
+};

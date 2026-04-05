@@ -13,9 +13,21 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { createPortal } from "react-dom";
-import { BUSINESS_DATA, SERVICES, getServiceIcon } from "@/constants";
+import { BUSINESS_DATA, getServiceHref, getServiceIcon } from "@/constants";
+import { buildApiUrl } from "@/lib/api";
+import { cacheServiceForDetail } from "@/lib/services";
 import TopBar from "./TopBar";
 import StickyMobileActions from "./StickyMobileActions";
+
+interface Service {
+  id: string;
+  title: string;
+  shortHeading?: string;
+  description: string;
+  iconName: string;
+  isActive: boolean;
+  createdAt: any;
+}
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,7 +35,50 @@ const Navbar = () => {
   const [servicesOpen, setServicesOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [services, setServices] = useState<Service[]>([]);
   const pathname = usePathname();
+
+  // Fetch recent services
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await fetch(buildApiUrl('/api/services/recent'));
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.data?.services) {
+            setServices(data.data.services);
+            // Cache in localStorage for 2 minutes
+            localStorage.setItem('cachedServices', JSON.stringify({
+              services: data.data.services,
+              timestamp: Date.now()
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch services:', error);
+      }
+    };
+
+    // Check cache first
+    const cached = localStorage.getItem('cachedServices');
+    if (cached) {
+      try {
+        const { services: cachedServices, timestamp } = JSON.parse(cached);
+        const cacheAge = Date.now() - timestamp;
+        const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
+        
+        if (cacheAge < CACHE_DURATION && cachedServices.length > 0) {
+          setServices(cachedServices);
+          return; // Use cache, don't fetch
+        }
+      } catch (error) {
+        console.error('Failed to parse cached services:', error);
+      }
+    }
+
+    // No valid cache, fetch fresh data
+    fetchServices();
+  }, []);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -171,10 +226,13 @@ const Navbar = () => {
 
                             {/* Services Grid */}
                             <div className="grid grid-cols-2 gap-3 max-h-[440px] overflow-y-auto pr-1">
-                              {SERVICES.map((s) => (
+                              {services.map((s) => (
                                 <Link
                                   key={s.id}
-                                  href={`/services/${s.id}`}
+                                  href={getServiceHref(s)}
+                                  onMouseEnter={() => cacheServiceForDetail(s)}
+                                  onFocus={() => cacheServiceForDetail(s)}
+                                  onClick={() => cacheServiceForDetail(s)}
                                   className="relative flex items-start p-4 rounded-xl bg-slate-50/50 hover:bg-white transition-all group/item border border-slate-200/60 hover:border-orange-400/50 hover:shadow-lg hover:shadow-orange-500/15 overflow-hidden"
                                 >
                                   {/* Glass overlay */}
@@ -195,7 +253,7 @@ const Navbar = () => {
                                       {s.title}
                                     </h4>
                                     <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">
-                                      {s.description}
+                                      {s.shortHeading || s.description}
                                     </p>
                                   </div>
                                 </Link>
@@ -394,10 +452,12 @@ const Navbar = () => {
                                         className="overflow-hidden"
                                       >
                                         <div className="pl-3 space-y-1.5 pt-1">
-                                          {SERVICES.map((service) => (
+                                          {services.map((service) => (
                                             <Link
                                               key={service.id}
-                                              href={`/services/${service.id}`}
+                                              href={getServiceHref(service)}
+                                              onMouseEnter={() => cacheServiceForDetail(service)}
+                                              onFocus={() => cacheServiceForDetail(service)}
                                               onClick={() => setIsOpen(false)}
                                               className="relative flex items-center gap-3 px-4 py-3 bg-white/40 backdrop-blur-xl border border-white/60 rounded-xl text-sm font-semibold text-slate-600 hover:text-orange-600 hover:border-orange-300/60 active:scale-[0.98] transition-all shadow-sm hover:shadow-lg hover:shadow-orange-500/10 overflow-hidden"
                                             >

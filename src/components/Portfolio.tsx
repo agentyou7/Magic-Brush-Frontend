@@ -1,17 +1,87 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { fetchActivePortfolio, readCachedActivePortfolio } from '@/lib/portfolio';
+
+interface PortfolioItem {
+  id: string;
+  title?: string;
+  shortHeading?: string;
+  imageUrl?: string;
+  isActive?: boolean;
+}
+
+interface PortfolioDisplayItem {
+  src: string;
+  title: string;
+  shortHeading: string;
+  size: "lg" | "md" | "sm";
+}
 
 const Portfolio = () => {
-  const images = [
-    { src: "/images/portfolio_living.png", title: "Living Room Modernization", size: "lg" },
-    { src: "/images/service_tiling.png", title: "Professional Tiling Work", size: "sm" },
-    { src: "/images/service_painting.png", title: "Premium Painting Finish", size: "sm" },
-    { src: "/images/portfolio_kitchen.png", title: "Kitchen Renovation", size: "md" },
-    { src: "/images/service_flooring.png", title: "Hardwood Floor Installation", size: "lg" },
-    { src: "/images/portfolio_bathroom.png", title: "Bathroom Plastering", size: "sm" },
+  const [portfolioItems, setPortfolioItems] = useState<PortfolioDisplayItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const cachedPortfolio = readCachedActivePortfolio();
+    if (cachedPortfolio && cachedPortfolio.length > 0) {
+      setPortfolioItems(
+        cachedPortfolio.map((item: PortfolioItem) => ({
+          src: item.imageUrl || "/images/portfolio_living.png",
+          title: item.title || "Project Showcase",
+          shortHeading: item.shortHeading || "Magic Brush Quality",
+          size: ["lg", "md", "sm"][Math.floor(Math.random() * 3)] as "lg" | "md" | "sm"
+        }))
+      );
+      setLoading(false);
+    }
+
+    const fetchPortfolio = async () => {
+      try {
+        const activePortfolio = await fetchActivePortfolio();
+        setPortfolioItems(
+          activePortfolio.map((item: PortfolioItem) => ({
+            src: item.imageUrl || "/images/portfolio_living.png",
+            title: item.title || "Project Showcase",
+            shortHeading: item.shortHeading || "Magic Brush Quality",
+            size: ["lg", "md", "sm"][Math.floor(Math.random() * 3)] as "lg" | "md" | "sm"
+          }))
+        );
+      } catch (error) {
+        console.error('Failed to fetch portfolio:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPortfolio();
+  }, []);
+
+  // Fallback to static images if loading or no data
+  const images = portfolioItems.length > 0 ? portfolioItems : [
+    { src: "/images/portfolio_living.png", title: "Living Room Modernization", shortHeading: "Magic Brush Quality", size: "lg" as const },
+    { src: "/images/service_tiling.png", title: "Professional Tiling Work", shortHeading: "Magic Brush Quality", size: "sm" as const },
+    { src: "/images/service_painting.png", title: "Premium Painting Finish", shortHeading: "Magic Brush Quality", size: "sm" as const },
+    { src: "/images/portfolio_kitchen.png", title: "Kitchen Renovation", shortHeading: "Magic Brush Quality", size: "md" as const },
+    { src: "/images/service_flooring.png", title: "Hardwood Floor Installation", shortHeading: "Magic Brush Quality", size: "lg" as const },
+    { src: "/images/portfolio_bathroom.png", title: "Bathroom Plastering", shortHeading: "Magic Brush Quality", size: "sm" as const },
   ];
+
+  if (loading) {
+    return (
+      <div className="bg-slate-50 min-h-screen py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="animate-pulse">
+              <div className="h-12 bg-slate-300 rounded max-w-md mx-auto mb-4"></div>
+              <div className="h-4 bg-slate-300 rounded max-w-2xl mx-auto"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-slate-50 min-h-screen py-20">
@@ -53,7 +123,7 @@ const Portfolio = () => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-8">
                 <h3 className="text-white text-xl font-bold translate-y-4 group-hover:translate-y-0 transition-transform">{img.title}</h3>
-                <p className="text-orange-400 text-sm font-semibold uppercase tracking-wider mb-2">Magic Brush Quality</p>
+                <p className="text-orange-400 text-sm font-semibold uppercase tracking-wider mb-2">{img.shortHeading}</p>
               </div>
             </motion.div>
           ))}

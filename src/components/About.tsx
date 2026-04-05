@@ -48,7 +48,7 @@ const About = () => {
               className="text-5xl sm:text-6xl lg:text-8xl font-black mb-8 tracking-tighter leading-tight text-slate-900"
             >
               Building Excellence <br />
-              Since <span className="text-orange-500">2009</span>
+              Since <span className="text-orange-500">2014</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -126,7 +126,7 @@ const About = () => {
               </h2>
               <div className="space-y-6 text-slate-600 text-lg leading-relaxed font-medium">
                 <p>
-                  Founded in 2009, Magic Brush Ltd has evolved from a specialist
+                  Founded in 2014, Magic Brush Ltd has evolved from a specialist
                   painting service into a multi-disciplinary construction
                   powerhouse. Our journey is defined by a singular focus:
                   surgical precision in every brushstroke and structural

@@ -4,18 +4,25 @@ import { Phone, Instagram, Facebook, Linkedin, Twitter, Youtube } from 'lucide-r
 import { BUSINESS_DATA } from '@/constants';
 
 const TopBar = () => {
+    const hasPhone = Boolean(BUSINESS_DATA.phone);
+    const hasEmail = Boolean(BUSINESS_DATA.email);
+
     return (
         <div className="hidden xl:block bg-gradient-to-r from-slate-50 via-white to-slate-50 text-slate-600 py-2 border-b border-slate-200/80 shadow-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
                 <div className="flex items-center space-x-6">
-                    <a href={`tel:${BUSINESS_DATA.phone}`} className="flex items-center hover:text-orange-500 transition-colors group">
-                        <Phone className="w-3 h-3 mr-2 text-orange-500 group-hover:scale-110 transition-transform" />
-                        {BUSINESS_DATA.phone}
-                    </a>
-                    <a href={`mailto:${BUSINESS_DATA.email}`} className="flex items-center hover:text-orange-500 transition-colors group">
-                        <div className="w-1.5 h-1.5 rounded-full bg-orange-500 mr-2" />
-                        {BUSINESS_DATA.email}
-                    </a>
+                    {hasPhone ? (
+                        <a href={`tel:${BUSINESS_DATA.phone}`} className="flex items-center hover:text-orange-500 transition-colors group">
+                            <Phone className="w-3 h-3 mr-2 text-orange-500 group-hover:scale-110 transition-transform" />
+                            {BUSINESS_DATA.phone}
+                        </a>
+                    ) : null}
+                    {hasEmail ? (
+                        <a href={`mailto:${BUSINESS_DATA.email}`} className="flex items-center hover:text-orange-500 transition-colors group">
+                            <div className="w-1.5 h-1.5 rounded-full bg-orange-500 mr-2" />
+                            {BUSINESS_DATA.email}
+                        </a>
+                    ) : null}
                 </div>
                 <div className="flex items-center space-x-4">
                     <div className="flex items-center space-x-3 pr-4 border-r border-slate-300">

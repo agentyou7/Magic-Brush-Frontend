@@ -3,11 +3,13 @@ import React from 'react';
 import Link from 'next/link';
 import { Shield, ArrowLeft } from 'lucide-react';
 import { BUSINESS_DATA } from '@/constants';
+import { buildPageMetadata } from '@/lib/seo';
 
-export const metadata = {
-    title: 'Privacy Policy | Magic Brush Ltd',
-    description: 'Privacy Policy for Magic Brush Ltd - Learn how we collect, use, and protect your personal information.',
-};
+export const metadata = buildPageMetadata({
+    title: 'Privacy Policy',
+    description: 'Read the Magic Brush Ltd privacy policy and learn how we collect, use, and protect your information.',
+    path: '/legal/privacy-policy',
+});
 
 const PrivacyPolicyPage = () => {
     return (

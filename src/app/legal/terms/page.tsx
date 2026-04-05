@@ -3,11 +3,13 @@ import React from 'react';
 import Link from 'next/link';
 import { FileText, ArrowLeft } from 'lucide-react';
 import { BUSINESS_DATA } from '@/constants';
+import { buildPageMetadata } from '@/lib/seo';
 
-export const metadata = {
-    title: 'Terms of Service | Magic Brush Ltd',
-    description: 'Terms of Service for Magic Brush Ltd - Review our terms and conditions for using our services.',
-};
+export const metadata = buildPageMetadata({
+    title: 'Terms of Service',
+    description: 'Review the Magic Brush Ltd terms of service for renovation, decorating, and property improvement work.',
+    path: '/legal/terms',
+});
 
 const TermsOfServicePage = () => {
     return (

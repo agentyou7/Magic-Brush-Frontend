@@ -2,7 +2,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Phone, Mail, MapPin, Instagram, Facebook, Linkedin, Twitter, Youtube, ChevronRight, Award, Clock } from 'lucide-react';
-import { BUSINESS_DATA, SERVICES } from '@/constants';
+import { BUSINESS_DATA, SERVICES, getServiceHref } from '@/constants';
 
 const Footer = () => {
     return (
@@ -144,7 +144,7 @@ const Footer = () => {
                             {SERVICES.slice(0, 6).map(s => (
                                 <li key={s.id}>
                                     <Link
-                                        href={`/services/${s.id}`}
+                                        href={getServiceHref(s)}
                                         className="text-slate-400 hover:text-white hover:translate-x-1 transition-all flex items-center text-sm font-medium group"
                                     >
                                         <ChevronRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-orange-500 mr-2 transition-colors" />

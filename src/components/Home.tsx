@@ -1,10 +1,23 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import { ArrowRight, ChevronRight, Phone, Star, ShieldCheck, Trophy, CheckCircle2, Quote } from 'lucide-react';
 import Link from 'next/link';
-import { SERVICES, BUSINESS_DATA, WHY_CHOOSE_US, getServiceIcon } from '@/constants';
+import { BUSINESS_DATA, WHY_CHOOSE_US, getServiceHref, getServiceIcon } from '@/constants';
+import { cacheServiceForDetail, fetchActiveServices, readCachedActiveServices } from '@/lib/services';
+
+interface Service {
+  id: string;
+  title: string;
+  shortHeading?: string;
+  description: string;
+  fullDetails?: string;
+  iconName: string;
+  imageUrl?: string;
+  isActive: boolean;
+  createdAt: any;
+}
 
 // Fixed TypeScript error by marking children as optional in the props definition
 const TiltCard = ({ children, className }: { children?: React.ReactNode, className?: string }) => {
@@ -180,6 +193,30 @@ const Hero = () => {
 };
 
 const Home = () => {
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const cachedServices = readCachedActiveServices();
+    if (cachedServices && cachedServices.length > 0) {
+      setServices(cachedServices.slice(0, 6) as Service[]);
+      setLoading(false);
+    }
+
+    const fetchServices = async () => {
+      try {
+        const activeServices = await fetchActiveServices();
+        setServices(activeServices.slice(0, 6) as Service[]);
+      } catch (error) {
+        console.error('Failed to fetch services:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
   const testimonials = [
     {
       name: "Emma Richardson",
@@ -222,78 +259,100 @@ const Home = () => {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
-          {SERVICES.map((service, index) => (
-            <motion.div
-              key={service.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              className="h-[550px] relative group"
-            >
-              <Link href={`/services/${service.id}`} className="block h-full transition-transform active:scale-[0.98]">
-                <TiltCard>
-                  <div className="h-full rounded-[3rem] bg-white border border-slate-200 flex flex-col overflow-hidden relative shadow-2xl transition-all duration-700 group-hover:border-orange-500/50">
-                    {/* Top Image Section - Increased Prominence */}
-                    <div className="relative h-[55%] overflow-hidden">
-                      <img
-                        src={service.imageUrl}
-                        alt={service.title}
-                        className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-1000 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent z-10" />
-
-                      {/* Floating Badge */}
-                      <div className="absolute top-6 right-6 z-20">
-                        <span className="bg-orange-500/90 backdrop-blur-md text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl">
-                          Premium Service
-                        </span>
-                      </div>
-
-                      <div className="absolute bottom-4 left-8 z-20">
-                        <span className="text-6xl font-black text-slate-900/10 group-hover:text-orange-500/40 transition-colors duration-500">
-                          0{index + 1}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* bottom Content Layer */}
-                    <div className="relative z-20 h-[45%] p-8 pt-4 flex flex-col justify-between bg-white">
-                      <div>
-                        <div className="flex items-center space-x-4 mb-4">
-                          <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/20 transform group-hover:rotate-12 transition-transform">
-                            {getServiceIcon(service.iconName)}
-                          </div>
-                          <h3 className="text-2xl font-black text-slate-900 tracking-tight group-hover:text-orange-500 transition-colors duration-300">
-                            {service.title}
-                          </h3>
-                        </div>
-                        <p className="text-slate-600 text-sm leading-relaxed font-medium line-clamp-2">
-                          {service.description}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="group/btn inline-flex items-center space-x-3 text-orange-500 font-bold tracking-widest uppercase text-[10px] group-hover:text-slate-900 transition-colors">
-                          <span className="border-b border-orange-500/30 group-hover:border-slate-900 transition-colors">Learn More</span>
-                          <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
-                        </div>
-
-                        <div className="flex gap-1">
-                          {[1, 2, 3].map((_, i) => (
-                            <div key={i} className="w-1.5 h-1.5 rounded-full bg-orange-500/20 group-hover:bg-orange-500 transition-colors" style={{ transitionDelay: `${i * 100}ms` }} />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Glass Shine Effect */}
-                    <div className="absolute top-0 -left-[100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-[25deg] group-hover:left-[100%] transition-all duration-1000 ease-in-out" />
+          {loading ? (
+            // Loading skeleton
+            Array.from({ length: 6 }).map((_, index) => (
+              <div key={index} className="h-[550px] relative group">
+                <div className="h-full rounded-[3rem] bg-white border border-slate-200 flex flex-col overflow-hidden relative shadow-2xl animate-pulse">
+                  <div className="h-[55%] bg-slate-200"></div>
+                  <div className="h-[45%] p-8 bg-white">
+                    <div className="h-6 bg-slate-200 rounded mb-4"></div>
+                    <div className="h-4 bg-slate-200 rounded mb-2"></div>
+                    <div className="h-4 bg-slate-200 rounded w-3/4"></div>
                   </div>
-                </TiltCard>
-              </Link>
-            </motion.div>
-          ))}
+                </div>
+              </div>
+            ))
+          ) : (
+            services.map((service, index) => (
+              <motion.div
+                key={service.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                className="h-[550px] relative group"
+              >
+                <Link
+                  href={getServiceHref(service)}
+                  onMouseEnter={() => cacheServiceForDetail(service)}
+                  onFocus={() => cacheServiceForDetail(service)}
+                  onClick={() => cacheServiceForDetail(service)}
+                  className="block h-full transition-transform active:scale-[0.98]"
+                >
+                  <TiltCard>
+                    <div className="h-full rounded-[3rem] bg-white border border-slate-200 flex flex-col overflow-hidden relative shadow-2xl transition-all duration-700 group-hover:border-orange-500/50">
+                      {/* Top Image Section - Increased Prominence */}
+                      <div className="relative h-[55%] overflow-hidden">
+                        <img
+                          src={service.imageUrl || "/images/service_default.png"}
+                          alt={service.title}
+                          className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-all duration-1000 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent z-10" />
+
+                        {/* Floating Badge */}
+                        <div className="absolute top-6 right-6 z-20">
+                          <span className="bg-orange-500/90 backdrop-blur-md text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-xl">
+                            Premium Service
+                          </span>
+                        </div>
+
+                        <div className="absolute bottom-4 left-8 z-20">
+                          <span className="text-6xl font-black text-slate-900/10 group-hover:text-orange-500/40 transition-colors duration-500">
+                            0{index + 1}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* bottom Content Layer */}
+                      <div className="relative z-20 h-[45%] p-8 pt-4 flex flex-col justify-between bg-white">
+                        <div>
+                          <div className="flex items-center space-x-4 mb-4">
+                            <div className="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/20 transform group-hover:rotate-12 transition-transform">
+                              {getServiceIcon(service.iconName)}
+                            </div>
+                            <h3 className="text-2xl font-black text-slate-900 tracking-tight group-hover:text-orange-500 transition-colors duration-300">
+                              {service.title}
+                            </h3>
+                          </div>
+                          <p className="text-slate-600 text-sm leading-relaxed font-medium line-clamp-2">
+                            {service.shortHeading || service.description}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="group/btn inline-flex items-center space-x-3 text-orange-500 font-bold tracking-widest uppercase text-[10px] group-hover:text-slate-900 transition-colors">
+                            <span className="border-b border-orange-500/30 group-hover:border-slate-900 transition-colors">Learn More</span>
+                            <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+                          </div>
+
+                          <div className="flex gap-1">
+                            {[1, 2, 3].map((_, i) => (
+                              <div key={i} className="w-1.5 h-1.5 rounded-full bg-orange-500/20 group-hover:bg-orange-500 transition-colors" style={{ transitionDelay: `${i * 100}ms` }} />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Glass Shine Effect */}
+                      <div className="absolute top-0 -left-[100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-[25deg] group-hover:left-[100%] transition-all duration-1000 ease-in-out" />
+                    </div>
+                  </TiltCard>
+                </Link>
+              </motion.div>
+            ))
+          )}
         </div>
       </section>
 

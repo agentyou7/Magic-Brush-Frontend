@@ -1,12 +1,53 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { CheckCircle2, ArrowRight } from 'lucide-react';
-import { SERVICES, getServiceIcon } from '@/constants';
+import { getServiceIcon } from '@/constants';
+import { fetchActiveServices, readCachedActiveServices } from '@/lib/services';
+import ServiceLoader from './ServiceLoader';
+
+interface Service {
+  id: string;
+  title: string;
+  shortHeading?: string;
+  description: string;
+  fullDetails?: string;
+  iconName: string;
+  imageUrl?: string;
+  isActive: boolean;
+  createdAt: any;
+}
 
 const Services = () => {
+  const [services, setServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const cachedServices = readCachedActiveServices();
+    if (cachedServices && cachedServices.length > 0) {
+      setServices(cachedServices as Service[]);
+      setLoading(false);
+    }
+
+    const fetchServices = async () => {
+      try {
+        const activeServices = await fetchActiveServices();
+        setServices(activeServices as Service[]);
+      } catch (error) {
+        console.error('Failed to fetch services:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  if (loading) {
+    return <ServiceLoader message="Loading services..." />;
+  }
   return (
     <div className="bg-slate-50 min-h-screen">
       {/* Hero Section */}
@@ -36,7 +77,7 @@ const Services = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 relative z-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {SERVICES.map((service, idx) => (
+          {services.map((service, idx) => (
             <motion.div
               key={service.id}
               initial={{ opacity: 0, y: 30 }}
@@ -47,22 +88,18 @@ const Services = () => {
             >
               <div className="relative h-64 overflow-hidden">
                 <img
-                  src={service.imageUrl}
+                  src={service.imageUrl || "/images/service_default.png"}
                   alt={service.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
-                <div className="absolute bottom-6 left-6 right-6 flex justify-between items-end">
-                  <div className="p-3 bg-orange-500 text-white rounded-2xl shadow-lg">
-                    {getServiceIcon(service.iconName)}
-                  </div>
-                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-slate-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
-
               <div className="p-8 flex flex-col flex-1">
                 <h3 className="text-2xl font-black text-slate-900 mb-4 group-hover:text-orange-500 transition-colors uppercase tracking-tight">{service.title}</h3>
                 <p className="text-slate-600 mb-8 leading-relaxed font-medium">
-                  {service.fullDetails}
+                  {service.description ? 
+                    service.description.split(' ').slice(0, 30).join(' ') + (service.description.split(' ').length > 30 ? '...' : '') 
+                    : service.shortHeading || 'Professional service with exceptional quality and attention to detail.'}
                 </p>
 
                 <div className="mt-auto space-y-6">
